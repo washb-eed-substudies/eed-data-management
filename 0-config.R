@@ -18,6 +18,8 @@ library(kableExtra)
 library(here)
 library(boxr)
 
+box_auth()
+
 dropboxDir <- NULL
 if(dir.exists("C:/Users/andre/Dropbox/WASHB-EE-analysis/WBB-EE-analysis/")){
   dropboxDir <- "C:/Users/andre/Dropbox/WASHB-EE-analysis/WBB-EE-analysis/"

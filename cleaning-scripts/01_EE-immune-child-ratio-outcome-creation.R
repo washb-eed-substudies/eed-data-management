@@ -1,6 +1,3 @@
-
-
-
 rm(list=ls())
 source(here::here("0-config.R"))
 
@@ -8,9 +5,9 @@ source(here::here("0-config.R"))
 ###Load in data
 ######################
 
-#Load in enrollment data,blinded tr data, stool data for adjusted analysis. Use read.dta() to read the .dta files, or read.csv() to 
+#Load in enrollment data,blinded tr data, stool data for adjusted analysis. Use read.dta() to read the .dta files, or read.csv() to
 #read .csv files. Use stringAsFactors=TRUE so that any character-based variable will be read in as a factor.
-d <- read.csv(paste0(dropboxDir,"Data/Cleaned/Audrie//bangladesh-dm-ee-anthro-diar-ee-med-plasma-blind-tr-enrol-covariates-lab.csv"), stringsAsFactors = TRUE)
+d <- box_read(830173814777)
 
 summary(d$t2_ln_il2)
 summary(d$t3_ln_il2)
@@ -35,9 +32,9 @@ d <- d %>% subset(., select = -c(t2_ratio_pro_il10,
                                  t3_ratio_th17_il10,
                                  t3_ratio_th1_th2,
                                  t3_ratio_th1_th17,
-                                 d23_ratio_pro_il10, 
-                                 d23_ratio_th1_il10,  
-                                 d23_ratio_th2_il10,  
+                                 d23_ratio_pro_il10,
+                                 d23_ratio_th1_il10,
+                                 d23_ratio_th2_il10,
                                  d23_ratio_th17_il10,
                                  d23_ratio_th1_th2,
                                  d23_ratio_th1_th17))
@@ -60,8 +57,8 @@ create_score <- function(d, numerator_vars=c("il1_t2", "il6_t2", "tnfa_t2"), den
     }
   }
   summary(x)
-  
-  
+
+
   for(i in denominator_vars){
     if(i==denominator_vars[1]){
       y = as.vector(scale(d[,i], center = FALSE, scale = apply(as.matrix(d[,i]), 2, sd, na.rm = TRUE)))
@@ -70,7 +67,7 @@ create_score <- function(d, numerator_vars=c("il1_t2", "il6_t2", "tnfa_t2"), den
     }
   }
   summary(y)
-  
+
   score=log(x/y)
   summary(score)
   d$score <- score
@@ -87,7 +84,7 @@ create_score <- function(d, numerator_vars=c("il1_t2", "il6_t2", "tnfa_t2"), den
 d <- create_score(d, numerator_vars=c("il1_t2", "il6_t2", "tnfa_t2"), denominator_vars="il10_t2", varname="t2_ratio_pro_il10")
 summary(d$t2_ratio_pro_il10)
 ggplot(d, aes(x=t2_ratio_pro_il10)) + geom_density()
- 
+
 # *Th1 / IL-10
 # *(IL-12 + IFN) / IL-10
 # gen t2_ratio_th1_il10 = (il12_t2 + ifng_t2) / il10_t2
@@ -95,7 +92,7 @@ d <- create_score(d, numerator_vars=c("il12_t2", "ifng_t2"), denominator_vars="i
 summary(d$t2_ratio_th1_il10)
 ggplot(d, aes(x=t2_ratio_th1_il10)) + geom_density()
 
-# *Th2 / IL-10 
+# *Th2 / IL-10
 # *(IL-4 + IL-5 + IL-13) / IL-10
 # gen t2_ratio_th2_il10 = (il4_t2 + il5_t2 + il13_t2) / il10_t2
 d <- create_score(d, numerator_vars=c("il4_t2", "il5_t2", "il13_t2"), denominator_vars="il10_t2", varname="t2_ratio_th2_il10")
@@ -127,7 +124,7 @@ summary(d$t2_ratio_th1_th17)
 ggplot(d, aes(x=t2_ratio_th1_th17)) + geom_density()
 
 
-# 
+#
 # *Pro-inflammatory cytokines / IL-10
 # *(IL-1 + IL-6 + TNF-a) / IL-10
 # gen t3_ratio_pro_il10 = (il1_t3 + il6_t3 + tnf_t3) / il10_t3
@@ -144,7 +141,7 @@ summary(d$t3_ratio_th1_il10)
 ggplot(d, aes(x=t3_ratio_th1_il10)) + geom_density()
 
 
-# *Th2 / IL-10 
+# *Th2 / IL-10
 # *(IL-4 + IL-5 + IL-13) / IL-10
 # gen t3_ratio_th2_il10 = (il4_t3 + il5_t3 + il13_t3) / il10_t3
 d <- create_score(d, numerator_vars=c("il4_t3", "il5_t3", "il13_t3"), denominator_vars="il10_t3", varname="t3_ratio_th2_il10")
@@ -180,7 +177,7 @@ d <- d %>% mutate(
   d23_ratio_th1_il10 = t3_ratio_th1_il10 - t2_ratio_th1_il10,
   d23_ratio_th2_il10 = t3_ratio_th2_il10 - t2_ratio_th2_il10,
   d23_ratio_th17_il10 = t3_ratio_th17_il10 - t2_ratio_th17_il10,
-  d23_ratio_th1_th2 = t3_ratio_th1_th2 - t2_ratio_th1_th2, 
+  d23_ratio_th1_th2 = t3_ratio_th1_th2 - t2_ratio_th1_th2,
   d23_ratio_th1_th17 = t3_ratio_th1_th17 - t2_ratio_th1_th17)
 
 ggplot(d, aes(x=d23_ratio_pro_il10)) + geom_density()
@@ -190,13 +187,11 @@ ggplot(d, aes(x=d23_ratio_th17_il10)) + geom_density()
 ggplot(d, aes(x=d23_ratio_th1_th2)) + geom_density()
 ggplot(d, aes(x=d23_ratio_th1_th17)) + geom_density()
 
-d_sum_child <- read.csv("C:/Users/Sophia/Documents/immune-growth/results/child sum score/child immune sum scores.csv") %>%
-  select(-X)
-d <- left_join(d, d_sum_child, by="childid")
-
-
-saveRDS(d, paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-analysis-dataset.rds"))
-
+box_write(
+  d,
+  "bangladesh-cleaned-child-immune-ratio.RDS",
+  dir_id = 140726526642
+)
 
 
 
