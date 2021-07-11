@@ -53,4 +53,4 @@ mom.sumscore <- as.data.frame(cbind(dataid = mom$dataid, mom.sumscore))
 
 ##### export results
 box_write(mom.sumscore,
-          file = "bangladesh-mom-immune-sum-score.csv")
+          "bangladesh-maternal-immune-sum-score.csv", dir_id = 140726526642)
