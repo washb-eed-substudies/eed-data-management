@@ -115,6 +115,5 @@ cont_time <- function(list_hr_min){
 }
 dfull$t3_col_time_z01_cont <- sapply(time_split, cont_time)
 
-saveRDS(dfull, paste0(dropboxDir,"Data/Cleaned/Andrew/stress_growth_data.RDS"))
-
+box_write(dfull, "bangladesh-cleaned-child-stress-data.RDS", dir_id = 140726526642)
 
