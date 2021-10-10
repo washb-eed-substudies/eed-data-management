@@ -119,7 +119,7 @@ names(dfull)
 dfull <- subset(dfull, select = -c(t3_hr1, t3_hr2, t3_hr3, t3_sysbp1, t3_diasbp1, t3_sysbp2,
                                      t3_diasbp2, t3_sysbp3, t3_diasbp3, t3_sysbp_mean, t3_diasbp_mean,
                                      t3_z01_time, t3_z02_time, t3_z03_time, t3_cort_min_elaps, t3_saa_min_elaps, t3_gcr_stdev))
-cleaned_stress <- dfull %>% select(childid, dataid, grep("t2|t3", names(dfull), value=T), -c(diar7d_t2, diar7d_t3), -grep("samplecol", names(.), value=T))
+cleaned_stress <- dfull %>% select(childid, grep("t2|t3", names(dfull), value=T), -c(diar7d_t2, diar7d_t3), -grep("samplecol", names(.), value=T))
 names(cleaned_stress)
 
 box_write(cleaned_stress, "bangladesh-cleaned-child-stress-data.RDS", dir_id = 140726526642)

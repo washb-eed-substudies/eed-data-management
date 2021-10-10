@@ -11,7 +11,7 @@ d <- d %>%
   mutate(delta_TS_Z = scale(delta_TS, center=TRUE, scale=TRUE)[,1])
 
 names(d)
-d <- select(d, childid, dataid, delta_ts_bp, delta_TS, delta_TS_Z, TS_t2,
+d <- select(d, childid, delta_ts_bp, delta_TS, delta_TS_Z, TS_t2,
             TS_t2_Z, TS_t3, TS_t3_Z, ageday_ht1, ageday_ht2, ageday_ht3,
             month_ht1, month_ht2, month_ht3, monsoon_ht1, monsoon_ht2, monsoon_ht3)
 

@@ -5,7 +5,7 @@ source(here::here("0-config.R"))
 stool <- box_read(835958132678)
 urine <- box_read(835953370668)
 
-d <- full_join(stool, urine, by = c("childid", "dataid")) %>%
+d <- full_join(stool, urine, by = c("childid")) %>%
   select(-grep(".x|.y", names(.), value=T))
 
 names(d)

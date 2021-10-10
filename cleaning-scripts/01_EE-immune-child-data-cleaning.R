@@ -187,7 +187,7 @@ ggplot(d, aes(x=d23_ratio_th17_il10)) + geom_density()
 ggplot(d, aes(x=d23_ratio_th1_th2)) + geom_density()
 ggplot(d, aes(x=d23_ratio_th1_th17)) + geom_density()
 
-d <- d %>% select(childid, dataid, grep("t2|t3|d23|month", names(d), value=T), -grep("sample|faid|mean", names(d), value=T))
+d <- d %>% select(childid, grep("t2|t3|d23|month", names(d), value=T), -grep("sample|faid|mean", names(d), value=T))
 
 box_write(
   d,
