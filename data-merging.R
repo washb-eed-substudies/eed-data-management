@@ -23,6 +23,8 @@ hh_wealth <- box_read(831432290888)
 enroll <- box_read_csv(833359280029)
 tr <- box_read_csv(837263699203)
 
+child_cov <- box_read_csv(870905721225)
+
 for (tbl_name in c("mom_sum", "pregnancy", "stress", "immune", "child_sum", "telo", "dev", "anthro", "eed",
               "symptoms", "diar", "dad_pss", "mom_pss", "cesd", "enroll", "hh_wealth", "viol", "tr")) {
   tbl <- get(tbl_name)
@@ -43,9 +45,10 @@ for (tbl_name in c("mom_sum", "pregnancy", "stress", "immune", "child_sum", "tel
   }
 }
 
+child_cov <- child_cov %>% select(childid, dataid, sex, birthord)
 
 #### covariate data ####
-child_covariates <- full_join(diar, symptoms, "childid")
+child_covariates <- full_join(diar, symptoms, "childid") %>% full_join(child_cov, by="childid")
 
 household <- full_join(enroll, hh_wealth, by="dataid") %>% full_join(viol, "dataid") %>%
   full_join(mom_pss, "dataid") %>% full_join(dad_pss, "dataid") %>% full_join(cesd, "dataid") %>% full_join(tr, c("block", "clusterid"))
@@ -53,24 +56,27 @@ household <- full_join(enroll, hh_wealth, by="dataid") %>% full_join(viol, "data
 
 #### combine all child exposure/outcome data ####
 # left join with development data because development data includes all arms of the WASH trial - eed subset only contains 4 arms
-child <- full_join(immune, child_sum, by="childid") %>% full_join(stress, by=c("childid", "dataid", "clusterid", "block")) %>%
-  full_join(telo, c("childid", "dataid", "clusterid", "block")) %>% full_join(eed, c("childid", "dataid", "clusterid", "block")) %>% full_join(anthro, "childid") %>%
-  left_join(dev, by=c("childid", "dataid", "clusterid", "block"))
+child <- full_join(immune, child_sum, by="childid") %>% full_join(stress, by=c("childid")) %>%
+  full_join(telo, c("childid")) %>% full_join(eed, c("childid")) %>% full_join(anthro, "childid") %>%
+  left_join(dev, by=c("childid"))
 nrow(child)
 child$childid %>% unique() %>% length() # make sure there are no duplicates
 
-nodataid <- filter(child, is.na(dataid)) # check to find children without dataids
-nodataid$childid
-nodataid$dataid <- gsub('.{1}$', '', nodataid$childid)
-household %>% filter(dataid %in% nodataid$dataid)
-table(child$tr)
-# 7004 dataid in sanitation arm - drop
-# 204001 has no data - drop
-child <- child %>% filter(childid != 70041 | childid != 204001)
-# 1805, 6106, 9905, 12805 dataids have enrollment data - drop?
-# 99051 childid has only development data, others have no child measurements/data - drop?
-
 child$dataid <- gsub('.{1}$', '', child$childid) %>% as.numeric()
+
+no_child_covariates <- child %>% filter(!(childid %in% child_covariates$childid))
+no_child_covariates$childid
+# all of these show up in the eed dataset
+# 204001 has no data (no enrollment data)
+# 1805, 6106, 12805, 26807 dataids have enrollment data but no other measurements
+# 99051 childid has only development data
+# 268071 has anthro data and in stress dataset but no data
+
+eed %>% filter(childid==204001)
+
+child %>% filter(childid==70041)
+filter(household, dataid==7004)
+# 7004 dataid in sanitation arm - shows up in eed dataset but no data
 
 # month_ut2, monsoon_ut2, agemth_ut2 in both the stress (.x) data and eed (.y) data - keep stress
 names(child)
@@ -91,14 +97,15 @@ names(maternal)
 
 #### combine all datasets ####
 # child and maternal exposure/outcome datasets, child and household covariates
-dfull <- full_join(child, maternal, "dataid") %>% full_join(child_covariates, "childid") %>% left_join(household, c("dataid")) #left join on only dataid because some children are missing block and clusterid even though we have their household enrollment data
+dfull <- full_join(child, maternal, "dataid") %>% full_join(child_covariates, c("childid", "dataid")) %>% left_join(household, c("dataid")) #left join on only dataid because some children are missing block and clusterid even though we have their household enrollment data
 sum(dfull$clusterid.x != dfull$clusterid.y, na.rm=T)
-sum(dfull$block != dfull$block, na.rm=T)
-dfull <- dfull %>% mutate(clusterid = clusterid.y, block = block.y) %>% select(!c(clusterid.x, block.x))
+sum(dfull$block.x != dfull$block.y, na.rm=T)
+dfull <- dfull %>% mutate(clusterid = clusterid.y, block = block.y) %>% select(!c(clusterid.x, block.x, clusterid.y, block.y))
 nrow(dfull)
 dfull$childid %>% unique() %>% length()
-filter(dfull, is.na(childid)) # have cytokine data for one mom - no enrollment - drop?
+filter(dfull, is.na(childid)) # have maternal data, cesd, enrollment for one mom dataid 12506 but no child data - also in handwashing arm
 
+dfull <- dfull %>% filter(tr %in% c("Control", "Nutrition", "WSH", "Nutrition + WSH")) %>% filter(!(childid %in% no_child_covariates$childid))
 
 #### clean enrollment covariates ####
 #set variables as factors/numeric
@@ -128,31 +135,8 @@ dfull$asset_bike<-as.factor(dfull$asset_bike)
 dfull$asset_moto<-as.factor(dfull$asset_moto)
 dfull$asset_sewmach<-as.factor(dfull$asset_sewmach)
 dfull$asset_mobile<-as.factor(dfull$asset_mobile)
-dfull$n_cattle<-as.numeric(dfull$n_cattle)
-dfull$n_goat<-as.numeric(dfull$n_goat)
-dfull$n_chicken<-as.numeric(dfull$n_chicken)
 
-dfull$lenhei_med_t2<-as.numeric(dfull$lenhei_med_t2)
-dfull$weight_med_t2<-as.numeric(dfull$weight_med_t2)
-
-dfull$monsoon_ht2<-as.factor(dfull$monsoon_ht2)
-dfull$monsoon_ht2<-addNA(dfull$monsoon_ht2)
-levels(dfull$monsoon_ht2)[length(levels(dfull$monsoon_ht2))]<-"Missing"
-
-dfull$monsoon_ht3<-as.factor(dfull$monsoon_ht3)
-dfull$monsoon_ht3<-addNA(dfull$monsoon_ht3)
-levels(dfull$monsoon_ht3)[length(levels(dfull$monsoon_ht3))]<-"Missing"
-
-dfull$ageday_ht2<-as.numeric(dfull$ageday_ht2)
-dfull$ageday_ht3<-as.numeric(dfull$ageday_ht3)
-
-dfull$anthro_days_btwn_t2_t3<-as.numeric(dfull$anthro_days_btwn_t2_t3)
-
-dfull$tr <- factor(dfull$tr,levels=c("Control","Nutrition + WSH"))
-
-dfull$cesd_sum_t2<-as.numeric(dfull$cesd_sum_t2)
-dfull$cesd_sum_ee_t3<-as.numeric(dfull$cesd_sum_ee_t3)
-dfull$pss_sum_mom_t3<-as.numeric(dfull$pss_sum_mom_t3)
+dfull$tr <- factor(dfull$tr,levels=c("Control","Nutrition", "Nutrition + WSH", "WSH"))
 
 dfull$diar7d_t2<-as.factor(dfull$diar7d_t2)
 dfull$diar7d_t2<-addNA(dfull$diar7d_t2)
@@ -162,8 +146,26 @@ dfull$diar7d_t3<-as.factor(dfull$diar7d_t3)
 dfull$diar7d_t3<-addNA(dfull$diar7d_t3)
 levels(dfull$diar7d_t3)[length(levels(dfull$diar7d_t3))]<-"Missing"
 
-dfull$life_viol_any_t3<-as.factor(dfull$life_viol_any_t3)
-dfull$life_viol_any_t3<-addNA(dfull$life_viol_any_t3)
-levels(dfull$life_viol_any_t3)[length(levels(dfull$life_viol_any_t3))]<-"Missing"
+dfull$ari7d_t2<-as.factor(dfull$ari7d_t2)
+dfull$ari7d_t2<-addNA(dfull$ari7d_t2)
+levels(dfull$ari7d_t2)[length(levels(dfull$ari7d_t2))]<-"Missing"
 
-box_write()
+dfull$ari7d_t3<-as.factor(dfull$ari7d_t3)
+dfull$ari7d_t3<-addNA(dfull$ari7d_t3)
+levels(dfull$ari7d_t3)[length(levels(dfull$ari7d_t3))]<-"Missing"
+
+dfull$nose7d_t2<-as.factor(dfull$nose7d_t2)
+dfull$nose7d_t2<-addNA(dfull$nose7d_t2)
+levels(dfull$nose7d_t2)[length(levels(dfull$nose7d_t2))]<-"Missing"
+
+dfull$nose7d_t3<-as.factor(dfull$nose7d_t3)
+dfull$nose7d_t3<-addNA(dfull$nose7d_t3)
+levels(dfull$nose7d_t3)[length(levels(dfull$nose7d_t3))]<-"Missing"
+
+dfull$life_viol_any_t3_cat<-as.factor(dfull$life_viol_any_t3)
+dfull$life_viol_any_t3_cat<-addNA(dfull$life_viol_any_t3_cat)
+levels(dfull$life_viol_any_t3_cat)[length(levels(dfull$life_viol_any_t3_cat))]<-"Missing"
+
+box_write(dfull,
+          "bangladesh-cleaned-master-data.RDS",
+          dir_id = 147779347962)

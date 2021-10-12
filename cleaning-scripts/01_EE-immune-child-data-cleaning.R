@@ -5,8 +5,6 @@ source(here::here("0-config.R"))
 ###Load in data
 ######################
 
-#Load in enrollment data,blinded tr data, stool data for adjusted analysis. Use read.dta() to read the .dta files, or read.csv() to
-#read .csv files. Use stringAsFactors=TRUE so that any character-based variable will be read in as a factor.
 d <- box_read(830173814777)
 
 summary(d$t2_ln_il2)
