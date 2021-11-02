@@ -93,7 +93,10 @@ for (analysis in analyses) {
     total <- t2 %>% full_join(t3, by=names(master))
 
   }
-
+  master[[analysis]] <- ifelse(master$childid %in% total$childid, 1, 0)
   box_write(total, file_name = paste0(analysis, ".RDS"), dir_id = 148798406168)
-
 }
+
+box_write(master,
+          "bangladesh-cleaned-master-data.RDS",
+          dir_id = 147779347962)

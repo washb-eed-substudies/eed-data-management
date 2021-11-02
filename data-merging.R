@@ -22,11 +22,12 @@ cesd <- box_read(830181592480)
 hh_wealth <- box_read(831432290888)
 enroll <- box_read_csv(833359280029)
 tr <- box_read_csv(837263699203)
+animals <- box_read_csv(880183983740)
 
 child_cov <- box_read_csv(870905721225)
 
 for (tbl_name in c("mom_sum", "pregnancy", "stress", "immune", "child_sum", "telo", "dev", "anthro", "eed",
-              "symptoms", "diar", "dad_pss", "mom_pss", "cesd", "enroll", "hh_wealth", "viol", "tr")) {
+              "symptoms", "diar", "dad_pss", "mom_pss", "cesd", "enroll", "hh_wealth", "viol", "tr", "animals")) {
   tbl <- get(tbl_name)
   if ("childid" %in% names(tbl)){
     assign(tbl_name, tbl %>% mutate(childid = as.numeric(childid)))
@@ -51,7 +52,8 @@ child_cov <- child_cov %>% select(childid, dataid, sex, birthord)
 child_covariates <- full_join(diar, symptoms, "childid") %>% full_join(child_cov, by="childid")
 
 household <- full_join(enroll, hh_wealth, by="dataid") %>% full_join(viol, "dataid") %>%
-  full_join(mom_pss, "dataid") %>% full_join(dad_pss, "dataid") %>% full_join(cesd, "dataid") %>% full_join(tr, c("block", "clusterid"))
+  full_join(mom_pss, "dataid") %>% full_join(dad_pss, "dataid") %>% full_join(cesd, "dataid") %>%
+  full_join(tr, c("block", "clusterid")) %>% full_join(animals, "dataid")
 
 
 #### combine all child exposure/outcome data ####
@@ -165,6 +167,32 @@ levels(dfull$nose7d_t3)[length(levels(dfull$nose7d_t3))]<-"Missing"
 dfull$life_viol_any_t3_cat<-as.factor(dfull$life_viol_any_t3)
 dfull$life_viol_any_t3_cat<-addNA(dfull$life_viol_any_t3_cat)
 levels(dfull$life_viol_any_t3_cat)[length(levels(dfull$life_viol_any_t3_cat))]<-"Missing"
+
+dfull <- dfull %>%
+  mutate(hcflag = ifelse(childid %in% c(001041,
+                                        023061,
+                                        037071,
+                                        050051,
+                                        053031,
+                                        068051,
+                                        069081,
+                                        143071,
+                                        179061,
+                                        184041,
+                                        235071,
+                                        330041,
+                                        271011,
+                                        375061), 1, 0),
+         lenflag = ifelse(childid %in% c(010081,
+                                         013031,
+                                         155031), 1, 0),
+         weiflag = ifelse(childid %in% c(143071,
+                                         101031,
+                                         155031,
+                                         348071,
+                                         404071,
+                                         408021), 1, 0),
+         whflag = ifelse(lenflag == 1 | weiflag == 1, 1, 0))
 
 box_write(dfull,
           "bangladesh-cleaned-master-data.RDS",
