@@ -4,9 +4,9 @@ source(here::here("0-config.R"))
 
 master <- box_read(871638120165)
 
-analyses <- c("eed-dev", "eed-growth", "immune-growth", "immune-dev", "ipv-stress", "ipv-immune", "ipv-telo",
-              "pregnancy-stress", "pregnancy-immune", "pregnancy-telo", "stress-dev", "stress-growth",
-              "telo-dev")
+analyses <- c("eed_dev", "eed_growth", "immune_growth", "immune_dev", "ipv_stress", "ipv_immune", "ipv_telo",
+              "pregnancy_stress", "pregnancy_immune", "pregnancy_telo", "stress_dev", "stress_growth",
+              "telo_dev")
 
 eed <- list(t1 = c("ln_L_conc_t1", "ln_M_conc_t1", "ln_mpo1", "ln_aat1", "ln_neo1"),
             t2 = c("ln_L_conc_t2", "ln_M_conc_t2", "ln_mpo2", "ln_aat2", "ln_neo2", "ln_reg2"),
@@ -47,7 +47,7 @@ filtering <- function(row){
 }
 
 find_exp_out <- function(name) {
-  split <- strsplit(name, "-")
+  split <- strsplit(name, "_")
   exp <- split[[1]][1]
   out <- split[[1]][2]
   list(exp, out, get(exp), get(out))

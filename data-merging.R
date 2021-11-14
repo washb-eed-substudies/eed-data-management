@@ -168,6 +168,10 @@ dfull$life_viol_any_t3_cat<-as.factor(dfull$life_viol_any_t3)
 dfull$life_viol_any_t3_cat<-addNA(dfull$life_viol_any_t3_cat)
 levels(dfull$life_viol_any_t3_cat)[length(levels(dfull$life_viol_any_t3_cat))]<-"Missing"
 
+dfull$viol_any_preg_cat<-as.factor(dfull$viol_any_preg)
+dfull$viol_any_preg_cat<-addNA(dfull$viol_any_preg_cat)
+levels(dfull$viol_any_preg_cat)[length(levels(dfull$viol_any_preg_cat))]<-"Missing"
+
 dfull <- dfull %>%
   mutate(hcflag = ifelse(childid %in% c(001041,
                                         023061,
