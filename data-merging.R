@@ -3,7 +3,7 @@ rm(list=ls())
 source(here::here("0-config.R"))
 
 mom_sum <- box_read_csv(832562341095)
-pregnancy <- box_read(832551885650) %>% select(!c(block, clusterid, tr))
+pregnancy <- box_read(845078269128) %>% select(!c(block, clusterid, tr))
 
 stress <- box_read(832563746109)
 telo <- box_read(836452716883)
@@ -82,12 +82,12 @@ filter(household, dataid==7004)
 
 # month_ut2, monsoon_ut2, agemth_ut2 in both the stress (.x) data and eed (.y) data - keep stress
 names(child)
-sum(child$month_ut2.x != child$month_ut2.y, na.rm=T)
-filter(child, is.na(month_ut2.x) & !is.na(month_ut2.y)) %>% nrow()
-filter(child, is.na(month_ut2.y) & !is.na(month_ut2.x)) %>% nrow()
+sum(child$ageday_ut2.x != child$ageday_ut2.y, na.rm=T)
+filter(child, is.na(ageday_ut2.x) & !is.na(ageday_ut2.y)) %>% nrow()
+filter(child, is.na(ageday_ut2.y) & !is.na(ageday_ut2.x)) %>% nrow()
 child <- child %>% rename(month_ut2 = month_ut2.x, monsoon_ut2 = monsoon_ut2.x,
-                          agemth_ut2 = agemth_ut2.x) %>%
-  select(!c(month_ut2.y, monsoon_ut2.y, agemth_ut2.y))
+                          agemth_ut2 = agemth_ut2.x, ageday_ut2 = ageday_ut2.x, ageyr_ut2 = ageyr_ut2.x) %>%
+  select(!c(month_ut2.y, monsoon_ut2.y, agemth_ut2.y, ageday_ut2.y, ageyr_ut2.y))
 
 names(child)
 
