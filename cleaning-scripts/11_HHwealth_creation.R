@@ -50,6 +50,7 @@ for(i in 1:ncol(df)){
 df <- df %>% subset(., select = -c(asset_clock))
 table(is.na(df))
 
+#Scale data.frame
 df_scaled <- scale(df, T, T) %>% as.data.frame()
 
 ##Computing the principal component using eigenvalue decomposition ##
@@ -63,7 +64,7 @@ load <- loadings(princ.return)[,1]
 
 pr.cp <- as.matrix(df) %*% load  ## Matrix multiplication of the input data with the loading for the 1st PC gives us the 1st PC in matrix form.
 
-df$HHwealth <- as.numeric(pr.cp) ## Gives us the 1st PC in numeric form in pr.
+df$HHwealth_old <- as.numeric(pr.cp) ## Gives us the 1st PC in numeric form in pr.
 
 
 load_scaled <- loadings(princ.return.scaled)[,1]
@@ -98,7 +99,7 @@ df<-data.frame(id, df)
 
 
 #Save just the wealth data
-pca.wealth<-df %>% subset(select=c(dataid, HHwealth,HHwealth_scaled))
+pca.wealth<-df %>% subset(select=c(dataid, HHwealth_old,HHwealth_scaled))
 head(pca.wealth)
 
 box_write(pca.wealth, "bangladesh-hhwealth.csv", 140725527270)
