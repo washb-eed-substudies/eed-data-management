@@ -67,15 +67,46 @@ grouped %>%
   # reshape(idvar="agemth", varying=list(2:3), v.names="prop", times = c("prop_weaned", "prop_bf"), direction = "long") %>%
   ggplot(aes(agemth, prop_weaned)) + geom_bar(stat="identity") + ylab("Percentage weaned")
 
-bf <- (bf_full %>% apply(2, mean, na.rm=T)*100)[2:4] %>% as.data.frame()
-bf <- rbind(bf, 100-bf)
-names(bf) <- "prop"
-bf %>% mutate(weaned = factor(ifelse(grepl("bf1", rownames(bf)), 0, 1),
-                              levels = c(0,1),
-                              labels = c("Breastfeeding", "Weaned")),
-              time = factor(str_extract(rownames(bf), "[0-9]{1}"))) %>%
-  ggplot(aes(fill=weaned, y=prop, x=time)) +
-  geom_bar(stat="identity") +
-  scale_x_discrete(name=element_blank(), labels=c("3 months", "14 months", "28 months")) +
-  ylab("Percent") +
-  theme(legend.position = "right", legend.title = element_blank())
+# bf <- (bf_full %>% apply(2, mean, na.rm=T)*100)[2:4] %>% as.data.frame()
+# bf <- rbind(bf, 100-bf)
+# names(bf) <- "prop"
+# bf %>% mutate(weaned = factor(ifelse(grepl("bf1", rownames(bf)), 0, 1),
+#                               levels = c(0,1),
+#                               labels = c("Breastfeeding", "Weaned")),
+#               time = factor(str_extract(rownames(bf), "[0-9]{1}"))) %>%
+#   ggplot(aes(fill=weaned, y=prop, x=time)) +
+#   geom_bar(stat="identity") +
+#   scale_x_discrete(name=element_blank(), labels=c("3 months", "14 months", "28 months")) +
+#   ylab("Percent") +
+#   theme(legend.position = "right", legend.title = element_blank())
+
+
+library(readr)
+bl <- read_dta("/Users/sophiatan/Downloads/infant feeding modules/ee_bl_append_ID_clean_infant_20180221.dta")
+ml <- read_dta("/Users/sophiatan/Downloads/infant feeding modules/ee_ml_append_ID_clean_infant_20180221.dta")
+el <- read_dta("/Users/sophiatan/Downloads/infant feeding modules/ee_el_append_ID_clean_infant_20180221.dta")
+
+dob <- readRDS("/Users/sophiatan/Dropbox/WASH/WBK-EE-analysis/Data/Cleaned/Andrew/WBK-EE-childDOB.rds")
+dob <- dob %>% select(childid, DOB)
+
+bf_full <- bl %>% select(childid, c_605, ee_bl_infant_date) %>%
+  full_join(ml %>% select(childid, c_605, ee_ml_infant_date), by="childid")
+
+bf_full <- bf_full %>% inner_join(dob, "childid")
+bf_full <- bf_full %>% mutate(t1 =c_605.x-1, t2 = c_605.y-1) %>% select(!grep("605", names(.))) %>%
+  mutate(age_t1 = lubridate::interval(DOB, ee_bl_infant_date) %/% months(1),
+         age_t2 = lubridate::interval(DOB, ee_ml_infant_date) %/% months(1))
+
+long <- data.frame(bf_full)%>%
+  select(childid, t1, t2, age_t1, age_t2) %>%
+  reshape(idvar = "childid", varying = list(c("t1", "t2"), c("age_t1", "age_t2")),
+          v.names = c("bf", "agemth"), direction = "long")
+long
+
+grouped <- long %>% group_by(agemth) %>%
+  summarise(prop_weaned = mean(bf, na.rm=T)*100, prop_bf = 100-prop_weaned) %>%
+  filter(!agemth %>% is.na())
+grouped %>%
+  # mutate(agemth=factor(agemth)) %>%
+  # reshape(idvar="agemth", varying=list(2:3), v.names="prop", times = c("prop_weaned", "prop_bf"), direction = "long") %>%
+  ggplot(aes(agemth, prop_weaned)) + geom_bar(stat="identity") + ylab("Percentage weaned")
