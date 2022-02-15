@@ -109,6 +109,15 @@ filter(dfull, is.na(childid)) # have maternal data, cesd, enrollment for one mom
 
 dfull <- dfull %>% filter(tr %in% c("Control", "Nutrition", "WSH", "Nutrition + WSH")) %>% filter(!(childid %in% no_child_covariates$childid))
 
+
+# add variables to turn cesd into binary variables
+# classify top 25% of mothers in sample as experiencing high depressive symptoms
+cesd_t2_q<-quantile(dfull$cesd_sum_t2, na.rm=T)[4]
+cesd_t3_q<-quantile(dfull$cesd_sum_ee_t3, na.rm=T)[4]
+dfull$cesd_sum_t2_binary<-ifelse(dfull$cesd_sum_t2 >= cesd_t2_q, 1, 0)
+dfull$cesd_sum_ee_t3_binary<-ifelse(dfull$cesd_sum_ee_t3 >= cesd_t3_q, 1, 0)
+
+
 #### clean enrollment covariates ####
 #set variables as factors/numeric
 dfull$sex<-as.factor(dfull$sex)
