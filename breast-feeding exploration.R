@@ -67,18 +67,18 @@ grouped %>%
   # reshape(idvar="agemth", varying=list(2:3), v.names="prop", times = c("prop_weaned", "prop_bf"), direction = "long") %>%
   ggplot(aes(agemth, prop_weaned)) + geom_bar(stat="identity") + ylab("Percentage weaned")
 
-# bf <- (bf_full %>% apply(2, mean, na.rm=T)*100)[2:4] %>% as.data.frame()
-# bf <- rbind(bf, 100-bf)
-# names(bf) <- "prop"
-# bf %>% mutate(weaned = factor(ifelse(grepl("bf1", rownames(bf)), 0, 1),
-#                               levels = c(0,1),
-#                               labels = c("Breastfeeding", "Weaned")),
-#               time = factor(str_extract(rownames(bf), "[0-9]{1}"))) %>%
-#   ggplot(aes(fill=weaned, y=prop, x=time)) +
-#   geom_bar(stat="identity") +
-#   scale_x_discrete(name=element_blank(), labels=c("3 months", "14 months", "28 months")) +
-#   ylab("Percent") +
-#   theme(legend.position = "right", legend.title = element_blank())
+bf <- (bf_full %>% apply(2, mean, na.rm=T)*100)[2:4] %>% as.data.frame()
+bf <- rbind(bf, 100-bf)
+names(bf) <- "prop"
+p1 <- bf %>% mutate(weaned = factor(ifelse(grepl("bf1", rownames(bf)), 0, 1),
+                              levels = c(0,1),
+                              labels = c("Breastfeeding", "Weaned")),
+              time = factor(str_extract(rownames(bf), "[0-9]{1}"))) %>%
+  ggplot(aes(fill=weaned, y=prop, x=time)) +
+  geom_bar(stat="identity") +
+  guides(fill=guide_legend(title = element_blank())) +
+  scale_x_discrete(name=element_blank(), labels=c("3 months", "14 months", "28 months")) +
+  ylab("Percent")
 
 
 library(readr)
@@ -110,3 +110,21 @@ grouped %>%
   # mutate(agemth=factor(agemth)) %>%
   # reshape(idvar="agemth", varying=list(2:3), v.names="prop", times = c("prop_weaned", "prop_bf"), direction = "long") %>%
   ggplot(aes(agemth, prop_weaned)) + geom_bar(stat="identity") + ylab("Percentage weaned")
+
+
+bf <- (bf_full %>% select(t1, t2) %>% apply(2, mean, na.rm=T)*100) %>% as.data.frame()
+bf <- rbind(bf, 100-bf)
+names(bf) <- "prop"
+p2 <- bf %>% mutate(weaned = factor(ifelse(nchar(rownames(.))==3, 0, 1),
+                                    levels = c(0,1),
+                                    labels = c("Breastfeeding", "Weaned")),
+                    time = factor(str_extract(rownames(bf), "[0-9]{1}"))) %>%
+  ggplot(aes(fill=weaned, y=prop, x=time)) +
+  geom_bar(stat="identity") +
+  scale_x_discrete(name=element_blank(), labels=c("6 months", "17 months")) +
+  ylab(element_blank())+
+  theme(legend.position = "right", legend.title=element_blank())
+
+library(patchwork)
+p <- p1+labs(subtitle="Bangladesh")+p2+labs(subtitle="Kenya")+plot_layout(widths = c(1, 1))
+p %>% ggsave(filename="/Users/sophiatan/Documents/WASH/EED-growth/breasfeeding_bk.jpg")
