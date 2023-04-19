@@ -53,7 +53,10 @@ master <- box_read(871638120165)
 
 bf_full <- bf_full %>% rename("t1_bf"="c605.x", "t2_bf"="c605.y", "t3_bf"="c605") %>%
   mutate(t1_bf = t1_bf-1, t2_bf = t2_bf-1, t3_bf = t3_bf-1) %>%
-  full_join(master %>% select(childid,agemth_ut1,agemth_ut2,agemth_ut3), by="childid")
+  full_join(master, by="childid")# %>% select(childid,agemth_ut1,agemth_ut2,agemth_ut3), by="childid")
+bf_full %>% group_by(tr) %>% select(t1_bf, t2_bf, t3_bf) %>% summarise(t1_bf=round(100*mean(t1_bf, na.rm=T),1),
+                                                                       t2_bf=round(100*mean(t2_bf,na.rm=T),1),
+                                                                       t3_bf=round(100*mean(t3_bf,na.rm=T)))
 
 long <- bf_full%>%reshape(idvar = "childid", varying = list(c("t1_bf", "t2_bf", "t3_bf"), c("agemth_ut1", "agemth_ut2", "agemth_ut3")),
                   v.names = c("bf", "agemth"), direction = "long")
