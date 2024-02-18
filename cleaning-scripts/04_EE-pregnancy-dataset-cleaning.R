@@ -7,7 +7,27 @@ source(here::here("0-config.R"))
 
 
 d<-box_read(830184329206)
+
+d2 <- box_read(896114709648)
+
 names(d)
+names(d2)
+
+d2_new <- filter(d2, sampletype_B =="B")
+d2_final <- d2_new %>% distinct(dataid_B, q11_B, .keep_all= TRUE) %>% rename(dataid = dataid_B, time_of_day_cort = q11_B) %>%
+  select(dataid, time_of_day_cort)
+
+time_day <- d2_final$time_of_day_cort
+time_split <- str_split(time_day, ":")
+cont_time <- function(list_hr_min){
+  # takes in list of time
+  # first number is hour of the day
+  # second number in list is minute of the hour
+  num_time <- as.numeric(unlist(list_hr_min))
+  num_time[1]+num_time[2]/60
+}
+d2_final$time_of_day_cort_cont <- sapply(time_split, cont_time)
+
 
 summary(d$mom_t0_ln_il2)
 
@@ -103,6 +123,7 @@ d$vit_A_def <- ifelse(d$RBP_inf_preg < 0.83, 1, 0)
 d$vit_D_def <- ifelse(d$vitD_nmol_per_L < 30, 1, 0)
 d$iron_def <- ifelse(d$FERR_inf_preg < 12 | d$STFR_inf_preg > 8.3, 1, 0)
 
+d <- d %>% left_join(d2_final, "dataid")
 
 box_write(d, "bangladesh-maternal-pregnancy-exposures-cleaned.RDS", dir_id = 140726526642)
 

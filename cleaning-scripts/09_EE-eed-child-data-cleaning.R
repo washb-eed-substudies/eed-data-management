@@ -6,7 +6,7 @@ stool <- box_read(835958132678)
 urine <- box_read(835953370668)
 
 d <- full_join(stool, urine, by = c("childid")) %>%
-  select(-grep(".x|.y", names(.), value=T))
+  select(-grep("\\.x|\\.y", names(.), value=T))
 
 names(d)
 d <- select(d, -grep("dataid_|childno|aliq|faid|reason|u[1-9]|samplecoldate", names(d), value=T))
