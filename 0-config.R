@@ -16,9 +16,10 @@ library(data.table)
 library(devtools)
 library(kableExtra)
 library(here)
-library(boxr)
 
-box_auth()
+
+data_dir <- "C:/Users/andre/OneDrive/Documents/washb_substudies/eed-substudy-data"
+
 
 dropboxDir <- NULL
 if(dir.exists("C:/Users/andre/Dropbox/WASHB-EE-analysis/WBB-EE-analysis/")){
@@ -63,5 +64,7 @@ tableau11 <- c("black","#1F77B4","#FF7F0E","#2CA02C","#D62728",
                "#BCBD22","#17BECF")
 
 #boxr setup
-
+# library(boxr)
+#
+# box_auth()
 
