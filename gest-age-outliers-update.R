@@ -78,8 +78,26 @@ ee_full_corrected <- ee_full_corrected %>%
     gest_age_weeks = as.numeric(difftime(samplecoldate_blood_t0, menstrual_date, units = "weeks"))
   )
 
+############# Fix implausible/offset time of cortisol sampling so values fall within plausible daytime hours ################
+# CANONICAL fix — substudy dataset-creation scripts keep an identical copy of this block.
+# Treats out-of-range times as AM/PM (12h) data-entry offsets: times after 18:00 are
+# shifted -12h and times before 06:00 are shifted +12h. The original (pre-fix) value
+# is preserved in time_of_day_cort_implausible.
+ee_full_corrected$time_of_day_cort_implausible <- ee_full_corrected$time_of_day_cort_cont
+
+summary(ee_full_corrected$time_of_day_cort_cont)
+plot(hist(ee_full_corrected$time_of_day_cort_cont))
+
+ee_full_corrected$time_of_day_cort_cont <- ifelse(ee_full_corrected$time_of_day_cort_cont > 18, ee_full_corrected$time_of_day_cort_cont - 12, ee_full_corrected$time_of_day_cort_cont)
+ee_full_corrected$time_of_day_cort_cont <- ifelse(ee_full_corrected$time_of_day_cort_cont < 6,  ee_full_corrected$time_of_day_cort_cont + 12, ee_full_corrected$time_of_day_cort_cont)
+plot(hist(ee_full_corrected$time_of_day_cort_cont))
+
+table(ee_full_corrected$time_of_day_cort_cont)
+
 #Save the corrected dataset
-saveRDS(ee_full_corrected, paste0(data_dir, "clean-data/bangladesh-cleaned-master-data_corrected_sampledates.RDS"))
+saveRDS(ee_full_corrected, paste0(data_dir, "/bangladesh-cleaned-master-data_corrected_sampledates.RDS"))
+
+
 
 #Inspect corrected participants
 ee_full_corrected %>%
